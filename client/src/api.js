@@ -102,5 +102,15 @@ export const api = {
   async getPurchaseOrderByBacklogItem(backlogItemId) {
     const response = await axios.get(`${API_BASE_URL}/purchase-orders/${backlogItemId}`)
     return response.data
+  },
+
+  async createRestockOrder(data) {
+    const response = await axios.post(`${API_BASE_URL}/restock/orders`, data)
+    return response.data
+  },
+
+  async getRestockOrders() {
+    // Restock orders use status "Submitted" and customer "Internal Restock"
+    return this.getOrders({ status: 'Submitted' })
   }
 }

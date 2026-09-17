@@ -27,6 +27,44 @@
         </div>
       </div>
 
+      <div v-if="restockOrders.length > 0" class="card restock-card">
+        <div class="card-header restock-header" @click="restockExpanded = !restockExpanded">
+          <h3 class="card-title">
+            Submitted Restock Orders
+            <span class="badge badge-submitted restock-count">{{ restockOrders.length }}</span>
+          </h3>
+          <button class="toggle-btn" :aria-expanded="restockExpanded">
+            <svg :class="['chevron', { 'chevron-open': restockExpanded }]" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div v-if="restockExpanded" class="table-container">
+          <table class="orders-table restock-table">
+            <thead>
+              <tr>
+                <th class="col-order-number">Order #</th>
+                <th class="col-date">Date Placed</th>
+                <th class="col-items">Items</th>
+                <th class="col-value">Total Value</th>
+                <th class="col-date">Expected Delivery</th>
+                <th class="col-status">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="order in restockOrders" :key="order.id">
+                <td class="col-order-number"><strong>{{ order.order_number }}</strong></td>
+                <td class="col-date">{{ formatDate(order.order_date) }}</td>
+                <td class="col-items">{{ order.items.length }} items</td>
+                <td class="col-value"><strong>{{ currencySymbol }}{{ order.total_value.toLocaleString() }}</strong></td>
+                <td class="col-date">{{ formatDate(order.expected_delivery) }}</td>
+                <td class="col-status"><span class="badge badge-submitted">Submitted</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">{{ t('orders.allOrders') }} ({{ orders.length }})</h3>
@@ -129,6 +167,11 @@ export default {
       loadOrders()
     })
 
+    const restockOrders = computed(() =>
+      orders.value.filter(order => order.customer === 'Internal Restock')
+    )
+    const restockExpanded = ref(true)
+
     const getOrdersByStatus = (status) => {
       return orders.value.filter(order => order.status === status)
     }
@@ -138,7 +181,8 @@ export default {
         'Delivered': 'success',
         'Shipped': 'info',
         'Processing': 'warning',
-        'Backordered': 'danger'
+        'Backordered': 'danger',
+        'Submitted': 'badge-submitted'
       }
       return statusMap[status] || 'info'
     }
@@ -160,6 +204,8 @@ export default {
       loading,
       error,
       orders,
+      restockOrders,
+      restockExpanded,
       getOrdersByStatus,
       getOrderStatusClass,
       formatDate,
@@ -275,5 +321,61 @@ export default {
 .item-meta {
   font-size: 0.813rem;
   color: #64748b;
+}
+
+.badge-submitted {
+  background: #4c1d95;
+  color: #c4b5fd;
+  border: 1px solid #6d28d9;
+}
+
+.restock-card {
+  margin-bottom: 1.5rem;
+}
+
+.restock-header {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.restock-count {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  vertical-align: middle;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.toggle-btn:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.chevron {
+  transition: transform 0.2s;
+  transform: rotate(0deg);
+}
+
+.chevron-open {
+  transform: rotate(180deg);
+}
+
+.restock-table {
+  table-layout: fixed;
+  width: 100%;
 }
 </style>
